@@ -65,67 +65,6 @@ const client = new Client({
   checkUpdate: false,
 });
 
-// Add reaction channels array - replace with your channel IDs
-const reactionChannels = [
-  "1229716511401316404", "1229716774195433472", "1292849609214918656",
-  "1292849535432917062", "1302993772006609007", "1281154949077798912",
-  "1281155099590135878", "1281155158922760273", "1281155174253199444",
-  "1281155289625923676", "1281155308684574723", "1281162728366538784",
-  "1281162745600937994", "1281155597718257664", "1281155620782735461",
-	"1281162942200545380", "1281162959850176574", "1281163276008292352",
-    "1282037994890461265", "1281163523199864904", "1281163551700025426",
-    "1281163648672337951"
-    
-];
-
-// Function to get random messages from a channel
-async function getRandomMessages(channel, limit = 10) {
-  const messages = await channel.messages.fetch({ limit: 10 });
-  return messages.random(Math.min(messages.size, limit));
-}
-
-// Function to handle reactions with better error handling
-async function addReactions() {
-  console.log('🔄 Starting reaction cycle...');
-  
-  for (const channelId of reactionChannels) {
-    const channel = client.channels.cache.get(channelId);
-    if (!channel) {
-      console.log(`⚠️ Cannot find channel: ${channelId}`);
-      continue;
-    }
-
-    try {
-      console.log(`📝 Fetching messages from channel: ${channel.name}`);
-      const messages = await channel.messages.fetch({ limit: 10 }); // Changed to 100 messages
-      if (messages.size === 0) {
-        console.log(`⚠️ No messages found in channel: ${channel.name}`);
-        continue;
-      }
-
-      for (const [_, message] of messages) {
-        try {
-          const reactions = message.reactions.cache;
-          if (reactions.size === 0) {
-            console.log(`⚠️ No reactions found in message: ${message.id}`);
-            continue;
-          }
-
-          const randomReaction = reactions.random();
-          console.log(`👉 Attempting to react with ${randomReaction.emoji.name} to message in ${channel.name}`);
-          await message.react(randomReaction.emoji);
-          await new Promise(resolve => setTimeout(resolve, 2000)); // Increased delay to 2s
-        } catch (reactionError) {
-          console.error(`❌ Failed to react to message: ${reactionError.message}`);
-        }
-      }
-      console.log(`✅ Completed reactions in channel: ${channel.name}`);
-    } catch (error) {
-      console.error(`❌ Error in channel ${channel.name}:`, error.message);
-    }
-  }
-}
-
 // Add this after the client declaration but before the ready event
 async function clickButtonAndReact(channel) {
   try {
@@ -220,24 +159,11 @@ client.on("ready", async () => {
     await checkAndExecuteCommand(".feed", channel, 14400000, "đã feed");
   }, 60000);
 
-  // Modify reaction interval to run every 30 minutes
-  setInterval(async () => {
-    console.log('⏰ Reaction interval triggered');
-    await addReactions();
-  }, 1800000); // Changed to 30 minutes (1800000 ms)
-
-  // Initial reaction run with longer delay
-  console.log('🚀 Scheduling initial reaction run...');
-  setTimeout(addReactions, 10000); // Changed to 10 seconds
-
-  // Add this before the end of ready event
+  // Add button clicking functionality
   const buttonChannel = client.channels.cache.get("1270200067550216236");
   if (buttonChannel) {
     console.log('🔄 Starting button clicking interval...');
-    // Initial click after 5 seconds
     setTimeout(() => clickButtonAndReact(buttonChannel), 5000);
-    
-    // Set interval for every 10 minutes and 5 seconds
     setInterval(() => clickButtonAndReact(buttonChannel), 605000);
   } else {
     console.error("❌ Could not find button channel");
@@ -246,6 +172,6 @@ client.on("ready", async () => {
 
 client
   .login(
-    "MTAwNzYzMTk4NjYyMzUyNDk2NQ.GZHPh4.YQAJ49PDBDYO20YMfeCoCy8lkZGeDiPbmqknwk"
+    "YOUR_TOKEN"
   )
   .catch(console.error);
